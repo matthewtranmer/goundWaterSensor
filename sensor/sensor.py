@@ -122,14 +122,14 @@ def main():
     distance_difference = 0.23
 
     while True:
-        average = sensor.getAverageReading(100, 0.05)
+        average = round(sensor.getAverageReading(100, 0.05), 2)
         distance_from_max = average - distance_difference
         
         if distance_from_max < 0:
             distance_from_max = 0
 
         query = "INSERT INTO readings (height, time) VALUES (%s, NOW());"
-        cursor.execute(query, (average,))
+        cursor.execute(query, (distance_from_max,))
         db.commit()  
 
 if __name__ == "__main__":
