@@ -108,7 +108,7 @@ def connect_db(db_password):
 
 def main():
     db_password = ""
-    with open('/home/sensoruser/goundWaterSensor/sensor/pydbpassword', 'r') as file:
+    with open('/home/sensoruser/goundWaterSensor/sensor/dbpassword', 'r') as file:
         db_password = file.read().splitlines()[0]
 
     db = connect_db(db_password)
