@@ -122,7 +122,7 @@ def main():
     distance_difference = 0.235
 
     while True:
-        average = sensor.getAverageReading(1000, 0.05), 2
+        average = sensor.getAverageReading(1000, 0.05)
         distance_from_max = round(average - distance_difference, 2)
         
         if distance_from_max < 0:
