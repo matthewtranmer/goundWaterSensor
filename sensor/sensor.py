@@ -133,7 +133,7 @@ def main():
         db.commit()  
 
 if __name__ == "__main__":
-    logging.basicConfig(filename="sensor.log", filemode="a", format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    logging.basicConfig(filename="sensor.log", level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     current_time = time.time()
     allowed_errors_per_minute = 10
@@ -155,4 +155,6 @@ if __name__ == "__main__":
                 break
 
             time.sleep(0.2)
+
+    logging.critical("The error limit has been surpassed")
 
