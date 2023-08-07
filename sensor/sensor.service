@@ -1,0 +1,13 @@
+[Unit]
+Description=Sensor Service
+After=network.target mysql.serivce
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=sensoruser
+ExecStart=/usr/bin/python3 /home/sensoruser/goundWaterSensor/sensor/sensor.py
+
+[Install]
+WantedBy=multi-user.target
