@@ -114,7 +114,7 @@ def main():
     db = connect_db(db_password)
 
     cursor = db.cursor()
-    sensor = HCSR04(18, 24)
+    sensor = HCSR04(14, 15)
 
     logging.info("Sensor Started")
     
