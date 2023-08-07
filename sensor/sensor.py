@@ -119,11 +119,11 @@ def main():
     logging.info("Sensor Started")
     
     #Distance between the sensor and the max water level
-    distance_difference = 0.23
+    distance_difference = 0.235
 
     while True:
-        average = round(sensor.getAverageReading(1000, 0.05), 2)
-        distance_from_max = average - distance_difference
+        average = sensor.getAverageReading(1000, 0.05), 2
+        distance_from_max = round(average - distance_difference, 2)
         
         if distance_from_max < 0:
             distance_from_max = 0
@@ -133,7 +133,7 @@ def main():
         db.commit()  
 
 if __name__ == "__main__":
-    logging.basicConfig(filename="sensor.log", filemode="w", format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    logging.basicConfig(filename="sensor.log", filemode="a", format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
     current_time = time.time()
     allowed_errors_per_minute = 10
