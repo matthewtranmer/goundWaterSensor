@@ -8,6 +8,7 @@ import (
 	"math"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
@@ -28,13 +29,9 @@ type Pages struct {
 func getMode(numbers []float64) float64 {
 	counts := make(map[float64]int)
 
-	fmt.Println("Mode Numbers: ")
 	for _, num := range numbers {
-		fmt.Print(num, ", ")
 		counts[num]++
 	}
-
-	fmt.Println()
 
 	mode := 0.0
 	count := 0
@@ -157,7 +154,7 @@ func calculateChanges(db *sql.DB) (percentage int, distance float64, err error) 
 	}
 
 	distance = current_reading - hour_ago_reading
-	fmt.Println("a")
+	fmt.Println("Readings: (distance changed, current reading, hour ago reading)")
 	fmt.Println(distance)
 	fmt.Println(current_reading)
 	fmt.Println(hour_ago_reading)
@@ -177,17 +174,9 @@ func calculateGraphData(db *sql.DB, start_date time.Time, end_date time.Time) (*
 
 	templateData.Graph_data = data
 
-	fmt.Printf("Percentages: ")
 	for i := range data {
-		if data[i] != -1 {
-
-			fmt.Printf("%d", data[i])
-			fmt.Printf(", ")
-		}
-
 		templateData.Graph_labels = append(templateData.Graph_labels, i*int(time_interval.Minutes()))
 	}
-	fmt.Printf("\n")
 
 	return templateData, nil
 }
@@ -198,13 +187,7 @@ func calculateOtherData(db *sql.DB) (*TemplateData, error) {
 		return nil, err
 	}
 
-	for _, i := range heights {
-		fmt.Print(i, ", ")
-	}
-	fmt.Println()
-
 	height := getMode(heights)
-	fmt.Println("MODE: ", height)
 	percentage := calculatePercentFilled(height)
 
 	templateData := new(TemplateData)
@@ -307,7 +290,6 @@ func (p *Pages) home(w http.ResponseWriter, r *http.Request) {
 	err = doc.Execute(w, TemplateData)
 	if err != nil {
 		fmt.Println(err)
-		fmt.Println("ASDFF")
 		return
 	}
 }
@@ -361,7 +343,6 @@ func getReadings(db *sql.DB, start_date time.Time, end_date time.Time, interval 
 		average_count := 0
 
 		for index < len(heights) && start_date.Add(interval).Unix() > times[index].Unix() {
-			fmt.Printf("%f, ", heights[index])
 			average += heights[index]
 			average_count += 1
 			index += 1
@@ -370,16 +351,12 @@ func getReadings(db *sql.DB, start_date time.Time, end_date time.Time, interval 
 		if average_count == 0 {
 			readings = append(readings, -1)
 		} else {
-			fmt.Println()
 			average /= float64(average_count)
 			readings = append(readings, calculatePercentFilled(average))
 		}
 
 		start_date = start_date.Add(interval)
 	}
-
-	fmt.Println("End Date: ", end_date)
-	fmt.Printf("Rows: %d\n", DEBUG)
 
 	return readings, nil
 }
@@ -418,28 +395,6 @@ func (p *Pages) getNewGraph(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-
-	/*
-		var err error
-		db, err := sql.Open("mysql", "WorkerRW:debugdevuserpassword@tcp(127.0.0.1:3306)/sensor")
-		if err != nil {
-			panic(err)
-		}
-
-		end_date, _ := getTime("2023-08-13 23:00:00")   //time.Now()                      //getTime("2023-08-13 02:00:00")
-		start_date, _ := getTime("2023-08-13 22:30:00") //end_date.Add(-24 * time.Hour) //getTime("2023-08-13 00:00:00")
-
-		data, err := getReadings(db, start_date, end_date, time.Minute*5)
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
-
-		for i, x := range data {
-			fmt.Printf("%d: %d\n", i, x)
-		}
-	*/
-
 	//testng only
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/static/", http.StripPrefix("/static", fs))
@@ -452,6 +407,7 @@ func main() {
 	}
 
 	dbpassword := string(data)
+	dbpassword = strings.TrimSuffix(dbpassword, "\n")
 
 	pages.db, err = sql.Open("mysql", "WorkerRW:"+dbpassword+"@tcp(127.0.0.1:3306)/sensor")
 	if err != nil {
