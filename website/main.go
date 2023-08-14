@@ -409,7 +409,7 @@ func main() {
 		panic(err)
 	}
 
-	http.Handle("/", Handler{Middleware: pages.home})
+	http.Handle("/sensor", Handler{Middleware: pages.home})
 	http.Handle("/api/getNewData", Handler{Middleware: pages.getNewData})
 	http.Handle("/api/getNewGraph", Handler{Middleware: pages.getNewGraph})
 
