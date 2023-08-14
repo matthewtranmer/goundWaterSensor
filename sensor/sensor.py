@@ -128,7 +128,7 @@ def main():
         if distance_from_max < 0:
             distance_from_max = 0
 
-        query = "INSERT INTO readings (height, time) VALUES (%s, NOW());"
+        query = "INSERT INTO readings (height, time) VALUES (%s, UTC_TIMESTAMP());"
         cursor.execute(query, (distance_from_max,))
         db.commit()  
 
