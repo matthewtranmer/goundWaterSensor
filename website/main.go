@@ -413,6 +413,6 @@ func main() {
 	http.Handle("/api/getNewData", Handler{Middleware: pages.getNewData})
 	http.Handle("/api/getNewGraph", Handler{Middleware: pages.getNewGraph})
 
-	http.ListenAndServe("192.168.1.2:3000", nil)
+	http.ListenAndServe("127.0.0.1:3000", nil)
 
 }
