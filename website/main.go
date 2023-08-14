@@ -158,7 +158,7 @@ func calculateChanges(db *sql.DB) (percentage int, distance float64, err error) 
 }
 
 func calculateGraphData(db *sql.DB, start_date time.Time, end_date time.Time) (*TemplateData, error) {
-	time_interval := time.Minute * 5
+	time_interval := time.Minute * 15
 
 	data, err := getReadings(db, start_date, end_date, time_interval)
 	if err != nil {
