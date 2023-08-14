@@ -154,11 +154,6 @@ func calculateChanges(db *sql.DB) (percentage int, distance float64, err error) 
 	}
 
 	distance = current_reading - hour_ago_reading
-	fmt.Println("Readings: (distance changed, current reading, hour ago reading)")
-	fmt.Println(distance)
-	fmt.Println(current_reading)
-	fmt.Println(hour_ago_reading)
-
 	return percentage, distance, nil
 }
 

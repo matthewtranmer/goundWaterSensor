@@ -1,0 +1,13 @@
+[Unit]
+Description=Sensor Website Service
+After=network.target mysql.serivce
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+User=sensoruser
+ExecStart=/bin/bash -c 'cd /home/sensoruser/goundWaterSensor/website && ./website'
+
+[Install]
+WantedBy=multi-user.target
