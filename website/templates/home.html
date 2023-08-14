@@ -188,7 +188,7 @@
             console.log("Data Updating")
 
             const xhr = new XMLHttpRequest()
-            xhr.open("GET", "/api/getNewData")
+            xhr.open("GET", "/sensor/api/getNewData")
             xhr.send()
             xhr.responseType = "json"
 
@@ -231,7 +231,7 @@
             var start_date = document.getElementById("start-date")
             var end_date = document.getElementById("end-date")
 
-            var url = "/api/getNewGraph?startdate="+ start_date.value +"&enddate=" + end_date.value
+            var url = "/sensor/api/getNewGraph?startdate="+ start_date.value +"&enddate=" + end_date.value
 
             xhr.open("GET", url)
             xhr.send()
