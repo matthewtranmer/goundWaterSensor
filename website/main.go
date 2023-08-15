@@ -429,8 +429,8 @@ func main() {
 	}
 
 	http.Handle("/", Handler{Middleware: pages.home})
-	http.Handle("/sensor/api/getNewData", Handler{Middleware: pages.getNewData})
-	http.Handle("/sensor/api/getNewGraph", Handler{Middleware: pages.getNewGraph})
+	http.Handle("/api/getNewData", Handler{Middleware: pages.getNewData})
+	http.Handle("/api/getNewGraph", Handler{Middleware: pages.getNewGraph})
 
 	http.ListenAndServe("127.0.0.1:3000", nil)
 
