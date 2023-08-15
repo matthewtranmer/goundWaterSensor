@@ -162,8 +162,17 @@
             }  
         });
 
-        document.getElementById("start-date").value = "{{ .Start_date }}"
-        document.getElementById("end-date").value = "{{ .End_date }}"
+        var start_date = document.getElementById("start-date")
+
+        start_date.value = "{{ .Start_date }}"
+        start_date.min = "{{ .Start_date_min }}"
+        start_date.max = "{{ .Start_date_max }}"
+
+        var end_date = document.getElementById("end-date")
+        
+        end_date.value = "{{ .End_date }}"
+        start_date.min = "{{ .End_date_min }}"
+        start_date.max = "{{ .End_date_max }}"
 
         var linegraphbox = document.getElementById("linegraphbox")
         var gridcontainer = document.getElementById("gridcontainer")

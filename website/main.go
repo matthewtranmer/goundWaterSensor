@@ -58,6 +58,10 @@ type TemplateData struct {
 	Graph_labels            []float64
 	Graph_data              []int
 	Time_unit               string
+	Start_date_min          string
+	Start_date_max          string
+	End_date_min            string
+	End_date_max            string
 }
 
 func getDateTime(datetime time.Time) string {
@@ -242,6 +246,29 @@ func calculateOtherData(db *sql.DB) (*TemplateData, error) {
 	return templateData, nil
 }
 
+func getDateOfOldestRecord(db *sql.DB) (*time.Time, error) {
+	statement, err := db.Prepare("SELECT time FROM readings ORDER BY time ASC LIMIT 1")
+	if err != nil {
+		return nil, err
+	}
+
+	date := ""
+	row := statement.QueryRow()
+
+	err = row.Scan(&date)
+	if err != nil {
+		return nil, err
+	}
+
+	date_str := strings.Split(date, " ")[0]
+	created_date, err := time.Parse("2006-01-02", date_str)
+	if err != nil {
+		return nil, err
+	}
+
+	return &created_date, nil
+}
+
 func calculateAllTemplateData(db *sql.DB, start_date time.Time, end_date time.Time) (*TemplateData, error) {
 	templateData, err := calculateOtherData(db)
 	if err != nil {
@@ -258,6 +285,17 @@ func calculateAllTemplateData(db *sql.DB, start_date time.Time, end_date time.Ti
 
 	templateData.Start_date = start_date.Format("2006-01-02")
 	templateData.End_date = end_date.Format("2006-01-02")
+
+	templateData.Start_date_max = templateData.Start_date
+	templateData.End_date_max = templateData.End_date
+
+	oldest_date, err := getDateOfOldestRecord(db)
+	if err != nil {
+		return nil, err
+	}
+
+	templateData.Start_date_min = oldest_date.Format("2006-01-02")
+	templateData.End_date_min = oldest_date.Add(time.Hour * -24).Format("2006-01-02")
 
 	templateData.Time_unit = "Hours"
 
