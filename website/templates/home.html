@@ -210,6 +210,9 @@
         function updateData(){
             console.log("Data Updating")
 
+            var date = new Date()
+            end_date.max = date.toISOString().split('T')[0]
+
             const xhr = new XMLHttpRequest()
             xhr.open("GET", "/sensor/api/getNewData")
             xhr.send()
@@ -250,10 +253,6 @@
             console.log("Graph Updating")
 
             const xhr = new XMLHttpRequest()
-            
-            var start_date = document.getElementById("start-date")
-            var end_date = document.getElementById("end-date")
-
             var url = "/sensor/api/getNewGraph?startdate="+ start_date.value +"&enddate=" + end_date.value
 
             xhr.open("GET", url)
