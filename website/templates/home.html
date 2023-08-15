@@ -128,7 +128,7 @@
             data: {
                 labels: linegraph_labels,
                 datasets: [{
-                    label: "Percent Filled",
+                    label: "Chamber Water Level",
                     backgroundColor:"rgba(58, 152, 199,0.9)",
                     borderColor: "rgba(58, 152, 199,0.9)",
                     data: linegraph_values,
@@ -143,7 +143,17 @@
                     y: {
                         beginAtZero: true,
                         max: 100,
+                        title: {
+                            display: true,
+                            text: "Percent Filled"
+                        }
                     },
+                    x:{
+                        title: {
+                            display: true,
+                            text: "Minutes"
+                        }
+                    }
                 }
             }  
         });
