@@ -57,6 +57,7 @@ type TemplateData struct {
 	End_date                string
 	Graph_labels            []float64
 	Graph_data              []int
+	Time_unit               string
 }
 
 func getDateTime(datetime time.Time) string {
@@ -181,10 +182,14 @@ func calculateGraphData(db *sql.DB, start_date time.Time, end_date time.Time) (*
 	templateData.Graph_data = data
 
 	if end_date.Sub(start_date).Hours() > 48 {
+		templateData.Time_unit = "Hours"
+
 		for i := range data {
 			templateData.Graph_labels = append(templateData.Graph_labels, float64(i)*time_interval.Minutes()/60/24)
 		}
 	} else {
+		templateData.Time_unit = "Days"
+
 		for i := range data {
 			templateData.Graph_labels = append(templateData.Graph_labels, float64(i)*time_interval.Minutes()/60)
 		}
@@ -253,6 +258,8 @@ func calculateAllTemplateData(db *sql.DB, start_date time.Time, end_date time.Ti
 
 	templateData.Start_date = start_date.Format("2006-01-02")
 	templateData.End_date = end_date.Format("2006-01-02")
+
+	templateData.Time_unit = "Hours"
 
 	return templateData, nil
 }
