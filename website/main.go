@@ -55,7 +55,7 @@ type TemplateData struct {
 	Distance_changed        float64
 	Start_date              string
 	End_date                string
-	Graph_labels            []int
+	Graph_labels            []float64
 	Graph_data              []int
 }
 
@@ -182,7 +182,7 @@ func calculateGraphData(db *sql.DB, start_date time.Time, end_date time.Time) (*
 	templateData.Graph_data = data
 
 	for i := range data {
-		templateData.Graph_labels = append(templateData.Graph_labels, i*int(time_interval.Minutes()))
+		templateData.Graph_labels = append(templateData.Graph_labels, float64(i)*time_interval.Minutes()/60)
 	}
 
 	return templateData, nil
