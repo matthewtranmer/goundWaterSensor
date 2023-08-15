@@ -181,7 +181,7 @@ func calculateGraphData(db *sql.DB, start_date time.Time, end_date time.Time) (*
 	templateData.Graph_data = data
 
 	for i := range data {
-		templateData.Graph_labels = append(templateData.Graph_labels, i*int(time_interval.Minutes()))
+		templateData.Graph_labels = append(templateData.Graph_labels, i*int(time_interval/60))
 	}
 
 	return templateData, nil
@@ -368,7 +368,6 @@ func getReadings(db *sql.DB, start_date time.Time, end_date time.Time) (readings
 		times = append(times, parsed_time)
 	}
 
-	//interval := time.Duration(time_interval_minutes)
 	index := 0
 
 	for start_date.Unix() <= end_date.Unix() {
@@ -391,7 +390,7 @@ func getReadings(db *sql.DB, start_date time.Time, end_date time.Time) (readings
 		start_date = start_date.Add(time_interval)
 	}
 
-	return readings, interval, nil
+	return readings, time_interval, nil
 }
 
 func (p *Pages) getNewGraph(w http.ResponseWriter, r *http.Request) {
