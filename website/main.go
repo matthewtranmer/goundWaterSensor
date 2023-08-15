@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"math"
@@ -170,9 +171,7 @@ func calculateChanges(db *sql.DB) (percentage int, distance float64, err error) 
 }
 
 func calculateGraphData(db *sql.DB, start_date time.Time, end_date time.Time) (*TemplateData, error) {
-	time_interval := time.Minute * 20 * time.Duration(math.Round((end_date.Sub(start_date).Hours() / 24)))
-
-	data, err := getReadings(db, start_date, end_date, time_interval)
+	data, time_interval, err := getReadings(db, start_date, end_date)
 	if err != nil {
 		return nil, err
 	}
@@ -315,45 +314,68 @@ func calculatePercentFilled(height float64) int {
 	return percentage
 }
 
-func getReadings(db *sql.DB, start_date time.Time, end_date time.Time, interval time.Duration) (readings []int, err error) {
-	statement, err := db.Prepare("SELECT height, time FROM readings WHERE time >= ? AND time <= ? ORDER BY time")
+func getReadings(db *sql.DB, start_date time.Time, end_date time.Time) (readings []int, interval time.Duration, err error) {
+	days := int(math.Round((end_date.Sub(start_date).Hours() / 24)))
+
+	statement, err := db.Prepare("SELECT COUNT(ID) FROM readings WHERE time >= ? AND time <= ?")
 	if err != nil {
-		return nil, err
+		return nil, 0, err
+	}
+
+	row := statement.QueryRow(getDateTime(start_date), getDateTime(end_date))
+	if row == nil {
+		return nil, 0, errors.New("row count query failed")
+	}
+
+	row_count := 0
+	row.Scan(&row_count)
+
+	time_interval := time.Minute * 20 * time.Duration(days)
+	readings_per_interval := 20
+
+	total_readings_wanted := (days * 24 * 60) / int(time_interval.Minutes()) * readings_per_interval
+
+	modulus := row_count / total_readings_wanted
+	if modulus < 1 {
+		modulus = 1
+	}
+
+	statement, err = db.Prepare("SELECT t.time, t.height FROM (SELECT height, time, ROW_NUMBER() OVER (ORDER BY time) AS rownumber FROM readings) AS t WHERE t.rownumber % ? = 0 AND t.time >= ? AND t.time <= ? ORDER BY t.time")
+	if err != nil {
+		return nil, 0, err
 	}
 
 	var heights []float64
 	var times []time.Time
 
 	height := 0.0
-	time := ""
+	db_time := ""
 
-	rows, err := statement.Query(getDateTime(start_date), getDateTime(end_date))
+	rows, err := statement.Query(modulus, getDateTime(start_date), getDateTime(end_date))
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
 
-	DEBUG := 0
-
 	for rows.Next() {
-		DEBUG += 1
-		rows.Scan(&height, &time)
+		rows.Scan(&db_time, &height)
 
-		parsed_time, err := getTime(time)
+		parsed_time, err := getTime(db_time)
 		if err != nil {
-			return nil, err
+			return nil, 0, err
 		}
 
 		heights = append(heights, height)
 		times = append(times, parsed_time)
 	}
 
+	//interval := time.Duration(time_interval_minutes)
 	index := 0
 
 	for start_date.Unix() <= end_date.Unix() {
 		average := 0.0
 		average_count := 0
 
-		for index < len(heights) && start_date.Add(interval).Unix() > times[index].Unix() {
+		for index < len(heights) && start_date.Add(time_interval).Unix() > times[index].Unix() {
 			average += heights[index]
 			average_count += 1
 			index += 1
@@ -366,10 +388,10 @@ func getReadings(db *sql.DB, start_date time.Time, end_date time.Time, interval 
 			readings = append(readings, calculatePercentFilled(average))
 		}
 
-		start_date = start_date.Add(interval)
+		start_date = start_date.Add(time_interval)
 	}
 
-	return readings, nil
+	return readings, interval, nil
 }
 
 func (p *Pages) getNewGraph(w http.ResponseWriter, r *http.Request) {
