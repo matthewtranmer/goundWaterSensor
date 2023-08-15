@@ -166,7 +166,8 @@ func calculateChanges(db *sql.DB) (percentage int, distance float64, err error) 
 
 	percentage = calculatePercentFilled(current_reading) - calculatePercentFilled(day_ago_reading)
 
-	distance = current_reading - three_hour_ago_reading
+	//Round to 2dp
+	distance = math.Round((current_reading-three_hour_ago_reading)*100) / 100
 	return percentage, distance, nil
 }
 
