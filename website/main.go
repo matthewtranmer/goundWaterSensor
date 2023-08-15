@@ -163,7 +163,7 @@ func calculateChanges(db *sql.DB) (percentage int, distance float64, err error) 
 
 	day_ago_reading := getMode(day_ago_readings)
 
-	percentage = calculatePercentFilled(day_ago_reading) - calculatePercentFilled(current_reading)
+	percentage = calculatePercentFilled(current_reading) - calculatePercentFilled(day_ago_reading)
 
 	distance = current_reading - three_hour_ago_reading
 	return percentage, distance, nil
