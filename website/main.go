@@ -182,13 +182,13 @@ func calculateGraphData(db *sql.DB, start_date time.Time, end_date time.Time) (*
 	templateData.Graph_data = data
 
 	if end_date.Sub(start_date).Hours() > 48 {
-		templateData.Time_unit = "Hours"
+		templateData.Time_unit = "Days"
 
 		for i := range data {
 			templateData.Graph_labels = append(templateData.Graph_labels, float64(i)*time_interval.Minutes()/60/24)
 		}
 	} else {
-		templateData.Time_unit = "Days"
+		templateData.Time_unit = "Hours"
 
 		for i := range data {
 			templateData.Graph_labels = append(templateData.Graph_labels, float64(i)*time_interval.Minutes()/60)
