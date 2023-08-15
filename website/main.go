@@ -97,63 +97,75 @@ func getLastReadings(db *sql.DB, readings int) ([]float64, error) {
 
 func calculateChanges(db *sql.DB) (percentage int, distance float64, err error) {
 	day_ago := time.Now().Add(-24 * time.Hour)
-	hour_ago := time.Now().Add(-1 * time.Hour)
+	three_hour_ago := time.Now().Add(-3 * time.Hour)
 
-	statement, err := db.Prepare("SELECT height FROM readings ORDER BY time DESC LIMIT 1")
+	statement, err := db.Prepare("SELECT height FROM readings ORDER BY time DESC LIMIT 10")
 	if err != nil {
 		return -1, -1, err
 	}
 
-	row := statement.QueryRow()
+	rows, err := statement.Query()
 	if err != nil {
 		return -1, -1, err
 	}
 
-	current_reading := 0.0
-	err = row.Scan(&current_reading)
-	if err != sql.ErrNoRows && err != nil {
-		return -1, -1, err
+	var current_readings []float64
+	reading := 0.0
+	for rows.Next() {
+		err = rows.Scan(&reading)
+		current_readings = append(current_readings, reading)
+		if err != sql.ErrNoRows && err != nil {
+			return -1, -1, err
+		}
 	}
 
-	statement, err = db.Prepare("SELECT height FROM readings WHERE time <= ? ORDER BY time DESC LIMIT 1")
+	current_reading := getMode(current_readings)
+
+	statement, err = db.Prepare("SELECT height FROM readings WHERE time <= ? ORDER BY time DESC LIMIT 10")
 	if err != nil {
 		return -1, -1, err
 	}
 
-	row = statement.QueryRow(getDateTime(hour_ago))
+	rows, err = statement.Query(getDateTime(three_hour_ago))
 	if err != nil {
 		return -1, -1, err
 	}
 
-	hour_ago_reading := 0.0
-	err = row.Scan(&hour_ago_reading)
-	if err != sql.ErrNoRows && err != nil {
-		return -1, -1, err
+	var three_hour_ago_readings []float64
+	for rows.Next() {
+		err = rows.Scan(&reading)
+		three_hour_ago_readings = append(three_hour_ago_readings, reading)
+		if err != sql.ErrNoRows && err != nil {
+			return -1, -1, err
+		}
 	}
 
-	statement, err = db.Prepare("SELECT height FROM readings WHERE time <= ? ORDER BY time DESC LIMIT 1")
+	three_hour_ago_reading := getMode(three_hour_ago_readings)
+
+	statement, err = db.Prepare("SELECT height FROM readings WHERE time <= ? ORDER BY time DESC LIMIT 10")
 	if err != nil {
 		return -1, -1, err
 	}
 
-	row = statement.QueryRow(getDateTime(day_ago))
+	rows, err = statement.Query(getDateTime(day_ago))
 	if err != nil {
 		return -1, -1, err
 	}
 
-	day_ago_reading := 0.0
-	err = row.Scan(&day_ago_reading)
-	if err != sql.ErrNoRows && err != nil {
-		return -1, -1, err
+	var day_ago_readings []float64
+	for rows.Next() {
+		err = rows.Scan(&reading)
+		day_ago_readings = append(day_ago_readings, reading)
+		if err != sql.ErrNoRows && err != nil {
+			return -1, -1, err
+		}
 	}
 
-	if day_ago_reading != 0.0 {
-		percentage = int(math.Round((current_reading - day_ago_reading) / day_ago_reading * 100))
-	} else {
-		percentage = int(math.Round((current_reading + 1 - day_ago_reading + 1) / (day_ago_reading + 1) * 100))
-	}
+	day_ago_reading := getMode(day_ago_readings)
 
-	distance = current_reading - hour_ago_reading
+	percentage = calculatePercentFilled(day_ago_reading) - calculatePercentFilled(current_reading)
+
+	distance = current_reading - three_hour_ago_reading
 	return percentage, distance, nil
 }
 
@@ -290,6 +302,10 @@ func (p *Pages) home(w http.ResponseWriter, r *http.Request) {
 }
 
 func calculatePercentFilled(height float64) int {
+	if height < 0 {
+		height = 0
+	}
+
 	const max_height = 0.52
 	if height > max_height {
 		height = max_height
@@ -357,13 +373,16 @@ func getReadings(db *sql.DB, start_date time.Time, end_date time.Time, interval 
 }
 
 func (p *Pages) getNewGraph(w http.ResponseWriter, r *http.Request) {
-	start_date, err := getTime(r.URL.Query()["startdate"][0] + " 00:00:01")
+	fmt.Println("Get New Graph")
+	current_time := time.Now().UTC().Format("15:04:05")
+
+	start_date, err := getTime(r.URL.Query()["startdate"][0] + " " + current_time)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	end_date, err := getTime(r.URL.Query()["enddate"][0] + " 23:59:59")
+	end_date, err := getTime(r.URL.Query()["enddate"][0] + " " + current_time)
 	if err != nil {
 		fmt.Println(err)
 		return
@@ -410,8 +429,8 @@ func main() {
 	}
 
 	http.Handle("/", Handler{Middleware: pages.home})
-	http.Handle("/api/getNewData", Handler{Middleware: pages.getNewData})
-	http.Handle("/api/getNewGraph", Handler{Middleware: pages.getNewGraph})
+	http.Handle("/sensor/api/getNewData", Handler{Middleware: pages.getNewData})
+	http.Handle("/sensor/api/getNewGraph", Handler{Middleware: pages.getNewGraph})
 
 	http.ListenAndServe("127.0.0.1:3000", nil)
 

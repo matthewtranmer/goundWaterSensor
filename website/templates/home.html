@@ -36,7 +36,7 @@
             </div>
         
             <div class="grid-item box textbox">
-                <div class="title">Distance Changed (Hourly)</div>
+                <div class="title">Distance Changed (Three Hourly)</div>
                 <div class="text">
                     <span id="distance_changed_sign">{{ .Distance_changed_sign }}</span><span id="distance_changed">{{ .Distance_changed }}</span>m
                 </div>
@@ -246,7 +246,6 @@
                     linegraph.data.datasets[0].data = values
                     
                     linegraph.data.labels = response["Graph_labels"]
-                    console.log(response)
                     linegraph.update()
                 }
             }
