@@ -7,7 +7,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=sensoruser
-ExecStart=/bin/bash -c 'cd /home/sensoruser/goundWaterSensor/website && ./website'
+ExecStart=/bin/bash -c 'cd /home/sensoruser/groundWaterSensor/website && ./website'
 
 [Install]
 WantedBy=multi-user.target

@@ -7,7 +7,7 @@ Type=simple
 Restart=always
 RestartSec=1
 User=sensoruser
-ExecStart=/bin/bash -c 'cd /home/sensoruser/goundWaterSensor/sensor && python3 sensor.py'
+ExecStart=/bin/bash -c 'cd /home/sensoruser/groundWaterSensor/sensor && python3 sensor.py'
 
 [Install]
 WantedBy=multi-user.target
