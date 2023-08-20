@@ -22,14 +22,12 @@ func getLastReadings(db *sql.DB, readings int) ([]float64, error) {
 		return nil, err
 	}
 
-	chamber_height := getMaxHeight()
-
 	var heights []float64
 	index := 0
 	for rows.Next() {
 		heights = append(heights, 0.0)
 		rows.Scan(&heights[index])
-		heights[index] = math.Round((chamber_height-heights[index])*100) / 100
+		heights[index] = math.Round((heights[index])*100) / 100
 		index++
 	}
 
@@ -149,7 +147,7 @@ func CalculateOtherData(db *sql.DB) (*templates.TemplateData, error) {
 
 	templateData := new(templates.TemplateData)
 
-	templateData.Height = height
+	templateData.Height = getMaxHeight() - height
 	templateData.Percentage = percentage
 
 	percent_change, distance_change, err := calculateChanges(db)
