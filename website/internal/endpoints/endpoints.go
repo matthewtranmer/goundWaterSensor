@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"html/template"
 	"net/http"
-	"os"
-	"strings"
 	"time"
 	"website/internal/dataproc"
 	"website/internal/mathsfn"
@@ -105,19 +103,12 @@ func (e *Endpoints) home(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (e *Endpoints) StartServer() {
+func (e *Endpoints) StartServer(address string, dbaddress string, dbpassword string) {
 	fs := http.FileServer(http.Dir("static"))
 	http.Handle("/sensor/static/", http.StripPrefix("/sensor/static", fs))
 
-	data, err := os.ReadFile("dbpassword")
-	if err != nil {
-		panic(err)
-	}
-
-	dbpassword := string(data)
-	dbpassword = strings.TrimSuffix(dbpassword, "\n")
-
-	e.db, err = sql.Open("mysql", "WorkerRW:"+dbpassword+"@tcp(127.0.0.1:3306)/sensor")
+	var err error
+	e.db, err = sql.Open("mysql", "WorkerRW:"+dbpassword+"@tcp("+dbaddress+")/sensor")
 	if err != nil {
 		panic(err)
 	}
@@ -126,5 +117,5 @@ func (e *Endpoints) StartServer() {
 	http.Handle("/sensor/api/getNewData", Handler{Middleware: e.getNewData})
 	http.Handle("/sensor/api/getNewGraph", Handler{Middleware: e.getNewGraph})
 
-	http.ListenAndServe("127.0.0.1:3000", nil)
+	http.ListenAndServe(address, nil)
 }

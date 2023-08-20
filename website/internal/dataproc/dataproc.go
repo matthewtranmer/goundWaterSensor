@@ -22,11 +22,14 @@ func getLastReadings(db *sql.DB, readings int) ([]float64, error) {
 		return nil, err
 	}
 
+	chamber_height := getMaxHeight()
+
 	var heights []float64
 	index := 0
 	for rows.Next() {
 		heights = append(heights, 0.0)
 		rows.Scan(&heights[index])
+		heights[index] = math.Round((chamber_height-heights[index])*100) / 100
 		index++
 	}
 
@@ -104,7 +107,7 @@ func calculateChanges(db *sql.DB) (percentage int, distance float64, err error) 
 	percentage = calculatePercentFilled(current_reading) - calculatePercentFilled(day_ago_reading)
 
 	//Round to 2dp
-	distance = math.Round((three_hour_ago_reading-current_reading)*100) / 100
+	distance = math.Round((current_reading-three_hour_ago_reading)*100) / 100
 	return percentage, distance, nil
 }
 
@@ -236,12 +239,16 @@ func CalculateAllTemplateData(db *sql.DB, start_date time.Time, end_date time.Ti
 	return templateData, nil
 }
 
+func getMaxHeight() float64 {
+	return 0.52
+}
+
 func calculatePercentFilled(height float64) int {
 	if height < 0 {
 		height = 0
 	}
 
-	const max_height = 0.52
+	max_height := getMaxHeight()
 	if height > max_height {
 		height = max_height
 	}
@@ -324,7 +331,7 @@ func getReadings(db *sql.DB, start_date time.Time, end_date time.Time) (readings
 			readings = append(readings, calculatePercentFilled(average))
 
 			current_dt := mathsfn.GetDateTime(start_date.Add(time_interval / 2))
-			associated_times = append(associated_times, current_dt)
+			associated_times = append(associated_times, current_dt+"UTC")
 		}
 
 		start_date = start_date.Add(time_interval)

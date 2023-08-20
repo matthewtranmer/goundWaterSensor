@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js" integrity="sha512-Hn1w6YiiFw6p6S2lXv6yKeqTk0PLVzeCwWY9n32beuPjQ5HLcvz5l2QsP+KilEr1ws37rCTw3bZpvfvVIeTh0Q==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <link rel="stylesheet" href="static/css/home.css">
     <title>Home</title>
 </head>
@@ -50,19 +51,22 @@
             <div style="margin-top: 20px;">
                 <div style="display: inline-block;">
                     <label for="start-date">Start Date</label>
-                    <input type="date" name="start-date" id="start-date">
+                    <input type="date" name="start-date" id="start-date" onchange="getNewGraph()">
                 </div>
                 <div style="display: inline-block;">
                     <label for="end-date">End Date</label>
-                    <input type="date" name="end-date" id="end-date">
-                    <button onclick="getNewGraph()">Submit</button>
+                    <input type="date" name="end-date" id="end-date" onchange="getNewGraph()">
                 </div>
             </div>
         </div>
 
         <div class="grid-item box" id="barchartbox">
-            <div id="barchart-wrapper" style="height: 500px;">
+            <div id="barchart-wrapper" style="height: 490px;">
                 <canvas id="barchart"></canvas>
+            </div>
+            <div style="display: flex; justify-content: center; align-items: center; margin-top: 2px;">
+                <div style="background-color: rgb(240, 43, 29); display: inline-block; width: 40px; height: 12px;"></div>
+                <div style="font-size: x-small; color: rgb(80, 80, 80); vertical-align: middle; margin-left: 5px; display: inline-block;">Top Of Large Clay Land Drain</div>
             </div>
         </div>   
     </div>
@@ -94,6 +98,19 @@
                 },
                 animation: {
                    duration: 0
+                },
+                plugins:{
+                    annotation:{
+                        annotations:{
+                            box1:{
+                                type: 'line',
+                                yMin: 48,
+                                yMax: 48,
+                                borderColor: 'rgb(240, 43, 29)',
+                                borderWidth: 2,
+                            }
+                        }
+                    }
                 }
             }  
         });
@@ -250,6 +267,8 @@
                     }
                 }
             }
+
+            getNewGraph()
         }
 
         function getNewGraph(){
@@ -277,8 +296,6 @@
                     linegraph.update()
                 }
             }
-
-            
         }
 
         last_changed_minutes = 0
