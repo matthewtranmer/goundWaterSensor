@@ -147,7 +147,7 @@ func CalculateOtherData(db *sql.DB) (*templates.TemplateData, error) {
 
 	templateData := new(templates.TemplateData)
 
-	templateData.Height = getMaxHeight() - height
+	templateData.Height = math.Round((getMaxHeight()-height)*100) / 100
 	templateData.Percentage = percentage
 
 	percent_change, distance_change, err := calculateChanges(db)
