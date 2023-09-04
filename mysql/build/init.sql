@@ -1,0 +1,3 @@
+REVOKE ALL PRIVILEGES ON *.* FROM 'WorkerRW'@'%';
+
+GRANT INSERT, SELECT ON *.* TO 'WorkerRW'@'%';

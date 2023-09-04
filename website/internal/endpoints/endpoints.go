@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
+	"log"
 	"net/http"
 	"time"
 	"website/internal/dataproc"
@@ -28,13 +29,13 @@ func (e *Endpoints) getNewData(w http.ResponseWriter, r *http.Request) {
 
 	templateData, err := dataproc.CalculateOtherData(e.db)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 
 	json_bytes, err := json.Marshal(templateData)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 
@@ -48,13 +49,13 @@ func (e *Endpoints) getNewGraph(w http.ResponseWriter, r *http.Request) {
 
 	start_date, err := mathsfn.GetTime(r.URL.Query()["startdate"][0] + " " + current_time)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 
 	end_date, err := mathsfn.GetTime(r.URL.Query()["enddate"][0] + " " + current_time)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 
@@ -64,13 +65,13 @@ func (e *Endpoints) getNewGraph(w http.ResponseWriter, r *http.Request) {
 
 	templateData, err := dataproc.CalculateGraphData(e.db, start_date, end_date)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 
 	json_bytes, err := json.Marshal(templateData)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 
@@ -86,27 +87,24 @@ func (e *Endpoints) home(w http.ResponseWriter, r *http.Request) {
 
 	TemplateData, err := dataproc.CalculateAllTemplateData(e.db, start_date, end_date)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 
 	doc, err := template.ParseFiles("templates/home.html")
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 
 	err = doc.Execute(w, TemplateData)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return
 	}
 }
 
 func (e *Endpoints) StartServer(address string, dbaddress string, dbpassword string) {
-	fs := http.FileServer(http.Dir("static"))
-	http.Handle("/sensor/static/", http.StripPrefix("/sensor/static", fs))
-
 	var err error
 	e.db, err = sql.Open("mysql", "WorkerRW:"+dbpassword+"@tcp("+dbaddress+")/sensor")
 	if err != nil {

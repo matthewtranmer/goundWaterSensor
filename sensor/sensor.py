@@ -3,6 +3,7 @@ import mysql.connector
 import time
 import logging
 import random
+import os
 
 class HCSR04:
     trigger = -1
@@ -107,14 +108,30 @@ def connect_db(db_password):
     return db
 
 def main():
+    if "DATABASE_SECRET_FILE" not in os.environ:
+        raise "DATABASE_SECRET_FILE environment variable not given"
+
+    secret_file = os.environ["DATABASE_SECRET_FILE"]
+
     db_password = ""
-    with open('/home/sensoruser/goundWaterSensor/sensor/dbpassword', 'r') as file:
+    with open(secret_file, 'r') as file:
         db_password = file.read().splitlines()[0]
 
     db = connect_db(db_password)
 
     cursor = db.cursor()
-    sensor = HCSR04(14, 15)
+
+    if "TRIGGER" not in os.environ:
+        raise "TRIGGER environment variable not given"
+
+    if "ECHO" not in os.environ:
+        raise "ECHO environment variable not given"
+
+    trigger = int(os.environ["TRIGGER"])
+    echo = int(os.environ["ECHO"])
+
+    sensor = HCSR04(trigger, echo)
+    #sensor = HCSR04(14, 15)
 
     logging.info("Sensor Started")
     

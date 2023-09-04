@@ -1,0 +1,9 @@
+FROM mysql:8.1.0
+
+ENV MYSQL_DATABASE=sensor
+ENV MYSQL_ROOT_PASSWORD=test
+#ENV MYSQL_RANDOM_ROOT_PASSWORD=yes
+#ENV MYSQL_ONETIME_PASSWORD=yes
+ENV MYSQL_USER=WorkerRW
+
+COPY init.sql /docker-entrypoint-initdb.d/
