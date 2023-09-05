@@ -36,6 +36,8 @@ services:
       - sensor-net
     volumes:
       - ./secrets/:/secrets:ro
+    devices:
+      - /dev/mem:/dev/mem
     environment:
       - DATABASE_SECRET_FILE=/secrets/dbpassword
       - TRIGGER=14

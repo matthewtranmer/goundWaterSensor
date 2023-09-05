@@ -99,7 +99,7 @@ class HCSR04:
     
 def connect_db(db_password):
     db = mysql.connector.connect(
-        host="localhost",
+        host="mysql",
         user="WorkerRW",
         password=db_password,
         database="sensor"
