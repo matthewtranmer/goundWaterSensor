@@ -28,18 +28,18 @@ services:
     networks:
       - sensor-net
     ports:
-      - 3051:80
+      - 80:80
 
-# sensor:
-#    image: matthewtranmer/gws-sensor
-#    networks:
-#      - sensor-net
-#    volumes:
-#      - ./secrets/:/secrets:ro
-#    environment:
-#      - DATABASE_SECRET_FILE=/secrets/dbpassword
-#      - TRIGGER=14
-#      - ECHO=15
+  sensor:
+    image: matthewtranmer/gws-sensor
+    networks:
+      - sensor-net
+    volumes:
+      - ./secrets/:/secrets:ro
+    environment:
+      - DATABASE_SECRET_FILE=/secrets/dbpassword
+      - TRIGGER=14
+      - ECHO=15
 
 networks:
   sensor-net:
