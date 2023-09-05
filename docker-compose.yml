@@ -1,0 +1,50 @@
+services:
+  mysql:
+    image: matthewtranmer/gws-mysql
+    volumes:
+      - sensor-storage:/var/lib/mysql
+      - ./secrets/:/secrets:ro
+    networks:
+      - sensor-net
+    
+    environment:
+      - MYSQL_RANDOM_ROOT_PASSWORD=yes
+      - MYSQL_ONETIME_PASSWORD=yes
+      - MYSQL_USER=WorkerRW
+      - MYSQL_PASSWORD_FILE=/secrets/dbpassword
+      - MYSQL_DATABASE=sensor
+
+  webapp:
+    image: matthewtranmer/gws-webapp
+    networks:
+      - sensor-net
+    volumes:
+      - ./secrets/:/secrets:ro
+    environment:
+      - DATABASE_SECRET_FILE=/secrets/dbpassword
+
+  nginx:
+    image: matthewtranmer/gws-nginx
+    networks:
+      - sensor-net
+    ports:
+      - 3051:80
+
+# sensor:
+#    image: matthewtranmer/gws-sensor
+#    networks:
+#      - sensor-net
+#    volumes:
+#      - ./secrets/:/secrets:ro
+#    environment:
+#      - DATABASE_SECRET_FILE=/secrets/dbpassword
+#      - TRIGGER=14
+#      - ECHO=15
+
+networks:
+  sensor-net:
+    driver: bridge
+
+volumes:
+  sensor-storage:
+    external: true

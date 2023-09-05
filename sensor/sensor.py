@@ -109,7 +109,7 @@ def connect_db(db_password):
 
 def main():
     if "DATABASE_SECRET_FILE" not in os.environ:
-        raise "DATABASE_SECRET_FILE environment variable not given"
+        raise Exception("DATABASE_SECRET_FILE environment variable not given")
 
     secret_file = os.environ["DATABASE_SECRET_FILE"]
 
@@ -122,10 +122,10 @@ def main():
     cursor = db.cursor()
 
     if "TRIGGER" not in os.environ:
-        raise "TRIGGER environment variable not given"
+        raise Exception("TRIGGER environment variable not given")
 
     if "ECHO" not in os.environ:
-        raise "ECHO environment variable not given"
+        raise Exception("ECHO environment variable not given")
 
     trigger = int(os.environ["TRIGGER"])
     echo = int(os.environ["ECHO"])
@@ -150,7 +150,8 @@ def main():
         db.commit()  
 
 if __name__ == "__main__":
-    logging.basicConfig(filename="sensor.log", level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    logging.info("Starting Up")
 
     current_time = time.time()
     allowed_errors_per_minute = 10

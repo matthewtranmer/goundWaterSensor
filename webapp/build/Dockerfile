@@ -9,6 +9,4 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o website
 
-EXPOSE 3500
-
 CMD ["./website"]

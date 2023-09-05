@@ -1,3 +1,9 @@
 REVOKE ALL PRIVILEGES ON *.* FROM 'WorkerRW'@'%';
-
 GRANT INSERT, SELECT ON *.* TO 'WorkerRW'@'%';
+
+CREATE TABLE IF NOT EXISTS readings(
+    ID INT NOT NULL AUTO_INCREMENT,
+    PRIMARY KEY(ID),
+    height FLOAT(24),
+    time DATETIME
+)

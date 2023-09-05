@@ -15,8 +15,8 @@ func main() {
 
 	db_file, exists := os.LookupEnv("DATABASE_SECRET_FILE")
 	if !exists {
-		log.Fatalln("Database secret not given")
-		panic("Database secret not given")
+		log.Fatalln("Database secret file not given")
+		panic("Database secret file not given")
 	}
 
 	data, err := os.ReadFile(db_file)

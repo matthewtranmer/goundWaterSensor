@@ -86,7 +86,7 @@ func (e *Endpoints) home(w http.ResponseWriter, r *http.Request) {
 	start_date := end_date.Add(-24 * time.Hour)
 
 	TemplateData, err := dataproc.CalculateAllTemplateData(e.db, start_date, end_date)
-	if err != nil {
+	if err != nil && err != sql.ErrNoRows {
 		log.Println(err)
 		return
 	}
