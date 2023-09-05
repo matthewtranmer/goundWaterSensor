@@ -37,7 +37,7 @@ services:
     volumes:
       - ./secrets/:/secrets:ro
     devices:
-      - /dev/mem:/dev/mem
+      - /dev/gpiomem:/dev/gpiomem
     environment:
       - DATABASE_SECRET_FILE=/secrets/dbpassword
       - TRIGGER=14
