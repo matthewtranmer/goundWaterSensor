@@ -24,7 +24,7 @@ services:
       - DATABASE_SECRET_FILE=/secrets/dbpassword
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_completed_successfully
 
   nginx:
     image: matthewtranmer/gws-nginx
@@ -34,7 +34,7 @@ services:
       - 80:80
     depends_on:
       webapp:
-        condition: service_healthy
+        condition: service_completed_successfully
 
   sensor:
     image: matthewtranmer/gws-sensor
@@ -50,7 +50,7 @@ services:
       - ECHO=15
     depends_on:
       mysql:
-        condition: service_healthy
+        condition: service_completed_successfully
 
 networks:
   sensor-net:
