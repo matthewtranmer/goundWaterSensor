@@ -6,13 +6,16 @@ services:
       - ./secrets/:/secrets:ro
     networks:
       - sensor-net
-    
     environment:
       - MYSQL_RANDOM_ROOT_PASSWORD=yes
       - MYSQL_ONETIME_PASSWORD=yes
       - MYSQL_USER=WorkerRW
       - MYSQL_PASSWORD_FILE=/secrets/dbpassword
       - MYSQL_DATABASE=sensor
+    healthcheck:
+      test: mysqladmin ping -h mysql -u $$MYSQL_USER --password=$$MYSQL_PASSWORD
+      timeout: 20s
+      retries: 10
 
   webapp:
     image: matthewtranmer/gws-webapp
@@ -24,7 +27,7 @@ services:
       - DATABASE_SECRET_FILE=/secrets/dbpassword
     depends_on:
       mysql:
-        condition: service_completed_successfully
+        condition: service_healthy
 
   nginx:
     image: matthewtranmer/gws-nginx
@@ -32,9 +35,6 @@ services:
       - sensor-net
     ports:
       - 80:80
-    depends_on:
-      webapp:
-        condition: service_completed_successfully
 
   sensor:
     image: matthewtranmer/gws-sensor
@@ -50,7 +50,7 @@ services:
       - ECHO=15
     depends_on:
       mysql:
-        condition: service_completed_successfully
+        condition: service_healthy
 
 networks:
   sensor-net:
