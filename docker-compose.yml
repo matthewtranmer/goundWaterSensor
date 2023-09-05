@@ -1,5 +1,6 @@
 services:
   mysql:
+    restart: unless-stopped
     image: matthewtranmer/gws-mysql
     volumes:
       - sensor-storage:/var/lib/mysql
@@ -18,6 +19,7 @@ services:
       retries: 10
 
   webapp:
+    restart: unless-stopped
     image: matthewtranmer/gws-webapp
     networks:
       - sensor-net
@@ -30,13 +32,19 @@ services:
         condition: service_healthy
 
   nginx:
+    restart: unless-stopped
     image: matthewtranmer/gws-nginx
     networks:
       - sensor-net
     ports:
       - 80:80
+    depends_on:
+      mysql:
+        condition: service_healthy
+    
 
   sensor:
+    restart: unless-stopped
     image: matthewtranmer/gws-sensor
     networks:
       - sensor-net
