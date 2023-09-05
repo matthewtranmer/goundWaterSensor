@@ -22,6 +22,8 @@ services:
       - ./secrets/:/secrets:ro
     environment:
       - DATABASE_SECRET_FILE=/secrets/dbpassword
+    depends_on:
+      - mysql
 
   nginx:
     image: matthewtranmer/gws-nginx
@@ -29,6 +31,8 @@ services:
       - sensor-net
     ports:
       - 80:80
+    depends_on:
+      - webapp
 
   sensor:
     image: matthewtranmer/gws-sensor
@@ -42,6 +46,8 @@ services:
       - DATABASE_SECRET_FILE=/secrets/dbpassword
       - TRIGGER=14
       - ECHO=15
+    depends_on:
+      - mysql
 
 networks:
   sensor-net:
