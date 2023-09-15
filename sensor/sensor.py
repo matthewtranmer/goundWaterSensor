@@ -1,9 +1,16 @@
-import RPi.GPIO as GPIO
 import mysql.connector
 import time
 import logging
 import random
 import os
+import sys
+import json
+import traceback
+
+try:
+    import RPi.GPIO as GPIO
+except Exception as e:
+    print(e, file=sys.stderr)
 
 class HCSR04:
     trigger = -1
@@ -78,13 +85,19 @@ class HCSR04:
         return time_elapsed / 2  * 343
     
     def debug_getDistance(self):
-        return random.uniform(0.15, 0.25)
+        return random.uniform(0.30, 0.40)
     
     def getAverageReading(self, readings, delay):
+        vals = []
         average = 0
         count = 0
         while count < readings:
-            distance = self.getDistance()
+            if not self.debug:
+                distance = self.getDistance()
+            else:
+                distance = self.debug_getDistance()
+
+            vals.append(distance)
             
             if (distance > 0.85):
                 logging.info("Greater Than 0.85m. Ignoring Reading")
@@ -106,6 +119,35 @@ def connect_db(db_password):
     )
 
     return db
+
+def getCalibrationInfo():
+    with open("calibration.json", "r") as file:
+        return json.loads(file.read())
+        
+def mainLoop(db, cursor, sensor):
+    calibration = getCalibrationInfo()
+
+    while True:
+        average = sensor.getAverageReading(500, 0.1)
+        logging.debug("Avr: " + str(average))
+        distance_from_max = round(average - calibration["Min_Distance"], 2)
+        logging.debug("DFM: " + str(distance_from_max))
+
+        if distance_from_max - calibration["Min_Max_Uncertanty"] < 0:
+            distance_from_max = 0
+
+        if distance_from_max + calibration["Min_Max_Uncertanty"] > calibration["Max_Distance"]:
+            distance_from_max = calibration["Max_Distance"]
+
+        water_level = round(calibration["Max_Distance"] - distance_from_max, 2)
+
+        logging.debug("WL: " + str(water_level))
+
+        percentage = round(water_level / calibration["Max_Distance"] * 100, 0)
+
+        query = "INSERT INTO readings (height, percentage, time, max_distance, min_distance, min_max_uncertanty) VALUES (%s, %s, UTC_TIMESTAMP(), %s, %s, %s);"
+        cursor.execute(query, (water_level, percentage, calibration["Max_Distance"], calibration["Min_Distance"], calibration["Min_Max_Uncertanty"]))
+        db.commit()  
 
 def main():
     if "DATABASE_SECRET_FILE" not in os.environ:
@@ -130,28 +172,29 @@ def main():
     trigger = int(os.environ["TRIGGER"])
     echo = int(os.environ["ECHO"])
 
-    sensor = HCSR04(trigger, echo)
+    debug = False
+    if "DEBUG" in os.environ:
+        logging.info("Starting in debug mode")
+        debug = True
+
+    sensor = HCSR04(trigger, echo, debug)
     #sensor = HCSR04(14, 15)
 
-    logging.info("Sensor Started")
+    logging.info("Sensor Started.")
+    mainLoop(db, cursor, sensor)
     
-    #Distance between the sensor and the max water level
-    distance_difference = 0.235
+    
 
-    while True:
-        average = sensor.getAverageReading(1000, 0.05)
-        distance_from_max = round(average - distance_difference, 2)
-        
-        if distance_from_max < 0:
-            distance_from_max = 0
-
-        query = "INSERT INTO readings (height, time) VALUES (%s, UTC_TIMESTAMP());"
-        cursor.execute(query, (distance_from_max,))
-        db.commit()  
+    
 
 if __name__ == "__main__":
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    level = logging.INFO
+    if "DEBUG" in os.environ:
+        level = logging.DEBUG
+
+    logging.basicConfig(level=level, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     logging.info("Starting Up")
+    logging.debug("test")
 
     current_time = time.time()
     allowed_errors_per_minute = 10
@@ -160,8 +203,8 @@ if __name__ == "__main__":
     for i in range(allowed_errors_per_minute):
         try:
             main()
-        except Exception as e:
-            logging.error(e)
+        except Exception:
+            logging.error(traceback.format_exc())
 
             errors += 1
 

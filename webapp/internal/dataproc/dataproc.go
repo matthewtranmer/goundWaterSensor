@@ -281,15 +281,15 @@ func getReadings(db *sql.DB, start_date time.Time, end_date time.Time) (readings
 		modulus = 1
 	}
 
-	statement, err = db.Prepare("SELECT t.time, t.height FROM (SELECT height, time, ROW_NUMBER() OVER (ORDER BY time) AS rownumber FROM readings) AS t WHERE t.rownumber % ? = 0 AND t.time >= ? AND t.time <= ? ORDER BY t.time")
+	statement, err = db.Prepare("SELECT t.time, t.percentage FROM (SELECT height, time, percentage, ROW_NUMBER() OVER (ORDER BY time) AS rownumber FROM readings) AS t WHERE t.rownumber % ? = 0 AND t.time >= ? AND t.time <= ? ORDER BY t.time")
 	if err != nil {
 		return nil, nil, 0, err
 	}
 
-	var heights []float64
+	var percentages []int
 	var times []time.Time
 
-	height := 0.0
+	percentage := 0
 	db_time := ""
 
 	rows, err := statement.Query(modulus, mathsfn.GetDateTime(start_date), mathsfn.GetDateTime(end_date))
@@ -298,25 +298,25 @@ func getReadings(db *sql.DB, start_date time.Time, end_date time.Time) (readings
 	}
 
 	for rows.Next() {
-		rows.Scan(&db_time, &height)
+		rows.Scan(&db_time, &percentage)
 
 		parsed_time, err := mathsfn.GetTime(db_time)
 		if err != nil {
 			return nil, nil, 0, err
 		}
 
-		heights = append(heights, height)
+		percentages = append(percentages, percentage)
 		times = append(times, parsed_time)
 	}
 
 	index := 0
 
 	for start_date.Unix() <= end_date.Unix() {
-		average := 0.0
+		average := 0
 		average_count := 0
 
-		for index < len(heights) && start_date.Add(time_interval).Unix() > times[index].Unix() {
-			average += heights[index]
+		for index < len(percentages) && start_date.Add(time_interval).Unix() > times[index].Unix() {
+			average += percentages[index]
 			average_count += 1
 			index += 1
 		}
@@ -325,8 +325,8 @@ func getReadings(db *sql.DB, start_date time.Time, end_date time.Time) (readings
 			readings = append(readings, -1)
 			associated_times = append(associated_times, "")
 		} else {
-			average /= float64(average_count)
-			readings = append(readings, calculatePercentFilled(average))
+			average /= average_count
+			readings = append(readings, average)
 
 			current_dt := mathsfn.GetDateTime(start_date.Add(time_interval / 2))
 			associated_times = append(associated_times, current_dt+"UTC")

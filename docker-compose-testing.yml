@@ -1,9 +1,11 @@
 services:
   mysql:
     restart: unless-stopped
-    image: matthewtranmer/gws-mysql
+    #
+    image: matthewtranmer/gws-mysql:staging
+    #
     volumes:
-      - sensor-storage:/var/lib/mysql
+    #  - sensor-storage-testing1:/var/lib/mysql
       - ./secrets/:/secrets:ro
     networks:
       - sensor-net
@@ -20,13 +22,15 @@ services:
 
   webapp:
     restart: unless-stopped
-    image: matthewtranmer/gws-webapp
+    image: matthewtranmer/gws-webapp:staging
     networks:
       - sensor-net
     volumes:
       - ./secrets/:/secrets:ro
     environment:
       - DATABASE_SECRET_FILE=/secrets/dbpassword
+    ports:
+      - 3000:3000
     depends_on:
       mysql:
         condition: service_healthy
@@ -37,7 +41,8 @@ services:
     networks:
       - sensor-net
     ports:
-      - 80:80
+    #
+      - 5000:80
     depends_on:
       mysql:
         condition: service_healthy
@@ -45,17 +50,19 @@ services:
 
   sensor:
     restart: unless-stopped
-    image: matthewtranmer/gws-sensor
+    #
+    image: matthewtranmer/gws-sensor:staging
     networks:
       - sensor-net
     volumes:
       - ./secrets/:/secrets:ro
-    devices:
-      - /dev/gpiomem:/dev/gpiomem
+    #devices:
+    #  - /dev/gpiomem:/dev/gpiomem
     environment:
       - DATABASE_SECRET_FILE=/secrets/dbpassword
       - TRIGGER=14
       - ECHO=15
+      - DEBUG=true
     depends_on:
       mysql:
         condition: service_healthy
@@ -64,6 +71,7 @@ networks:
   sensor-net:
     driver: bridge
 
-volumes:
-  sensor-storage:
-    external: true
+#volumes:
+#
+#  sensor-storage-testing1:
+#    external: true
